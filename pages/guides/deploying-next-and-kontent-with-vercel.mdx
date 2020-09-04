@@ -3,7 +3,6 @@ import Snippet from '~/components/snippet'
 import { InlineCode } from '~/components/text/code'
 import { Image } from '~/components/media'
 import Caption from '~/components/text/caption'
-import Note from '~/components/text/note'
 import Link from '~/components/text/link'
 import DeploySection from '~/components/guides/deploy-section'
 
@@ -27,7 +26,7 @@ export const meta = {
   name: 'Next.js + Kontent',
   type: 'site',
   demo: 'https://next-blog-kontent.vercel.app/',
-  lastEdited: '2020-09-04T07:43:30.263Z',
+  lastEdited: '2020-09-04T09:40:41.000Z',
   rank: 1,
 }
 
@@ -72,10 +71,10 @@ For this example you need to create a content model that defines an `author` and
 To import the content models with their data automatically, follow the next steps:
 
 1. Enter [Kontent application](https://app.kontent.ai)
-1. Go to "Project Settings", select API keys
-1. Activate Management API
-1. Copy `Project ID` and `Management API` key
-1. Install [Kontent Backup Manager](https://github.com/Kentico/kontent-backup-manager-js) and import data to newly created project from [kontent-backup.zip](https://github.com/vercel/next.js/raw/canary/examples/cms-kontent/kontent-backup.zip) file (place appropriate values for apiKey and projectId arguments):
+2. Go to "Project Settings", select API keys
+3. Activate Management API
+4. Copy `Project ID` and `Management API` key
+5. Install [Kontent Backup Manager](https://github.com/Kentico/kontent-backup-manager-js) and import data to newly created project from [kontent-backup.zip](https://github.com/vercel/next.js/raw/canary/examples/cms-kontent/kontent-backup.zip) file (place appropriate values for apiKey and projectId arguments):
 
 <Snippet
   dark
@@ -374,7 +373,10 @@ export default function CoverImage({ title, src, slug }) {
 <Caption>
   Possible modification of <InlineCode>components/cover-image.js</InlineCode>{' '}
   component using Image Transformation API to get images in{' '}
-  <a href="https://developers.google.com/speed/webp">moderm WebP format</a>.
+  <Link href="https://developers.google.com/speed/webp">
+    moderm WebP format
+  </Link>
+  .
 </Caption>
 
 ## Step 4: Using Preview Mode
@@ -419,5 +421,4 @@ export default ({ children }) => <Guide meta={meta}>{children}</Guide>
 
 export const config = {
   amp: 'hybrid',
-
 }
