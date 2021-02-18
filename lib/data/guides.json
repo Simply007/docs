@@ -1,5 +1,27 @@
 [
   {
+    "title": "Build and Deploy a Next.js Blog with Kentico Kontent and Vercel",
+    "description": "Create a Kontent backed Next.js app and deploy it with Vercel.",
+    "published": "2020-09-04T07:43:30.263Z",
+    "authors": ["Simply007"],
+    "url": "/guides/deploying-next-and-kontent-with-vercel",
+    "env": [
+      "KONTENT_PROJECT_ID",
+      "KONTENT_PREVIEW_API_KEY",
+      "KONTENT_PREVIEW_SECRET"
+    ],
+    "envDescription": ["Required to connect the app with Kontent."],
+    "envLink": ["https://vercel.link/cms-kontent-env"],
+    "example": "https://github.com/vercel/next.js/tree/canary/examples/cms-kontent",
+    "image": "https://og-image.now.sh/**Build%20and%20deploy%20a%20Next.js%20blog**%20%3Cbr%2F%3Ewith%20Kentico%20Kontent%20and%20Vercel.png?theme=light&md=1&fontSize=75px&images=https%3A%2F%2Fassets.vercel.com%2Fimage%2Fupload%2Ffront%2Fassets%2Fdesign%2Fvercel-triangle-black.svg&images=https%3A%2F%2Fraw.githubusercontent.com%2FKentico%2FHome%2Fmaster%2Fimages%2Fkk-logo-vercel.svg",
+    "editUrl": "pages/guides/deploying-next-and-kontent-with-vercel.mdx",
+    "name": "Next.js + Kontent",
+    "type": "site",
+    "demo": "https://next-blog-kontent.vercel.app/",
+    "lastEdited": "2021-02-18T12:18:30.000Z",
+    "rank": 1
+  },
+  {
     "title": "Build and Deploy a Next.js Blog with Cosmic and Vercel",
     "description": "Create a Cosmic backed Next.js app and deploy it with Vercel.",
     "published": "2020-08-14T07:47:12.000Z",

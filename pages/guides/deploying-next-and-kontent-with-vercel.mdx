@@ -1,0 +1,420 @@
+import Guide from '~/components/layout/guide'
+import Snippet from '~/components/snippet'
+import { InlineCode } from '~/components/text/code'
+import { Image } from '~/components/media'
+import Caption from '~/components/text/caption'
+import Link from '~/components/text/link'
+import DeploySection from '~/components/guides/deploy-section'
+
+export const meta = {
+  title: 'Build and Deploy a Next.js Blog with Kentico Kontent and Vercel',
+  description: 'Create a Kontent backed Next.js app and deploy it with Vercel.',
+  published: '2020-09-04T07:43:30.263Z',
+  authors: ['Simply007'],
+  url: '/guides/deploying-next-and-kontent-with-vercel',
+  env: [
+    'KONTENT_PROJECT_ID',
+    'KONTENT_PREVIEW_API_KEY',
+    'KONTENT_PREVIEW_SECRET',
+  ],
+  envDescription: ['Required to connect the app with Kontent.'],
+  envLink: ['https://vercel.link/cms-kontent-env'],
+  example: 'https://github.com/vercel/next.js/tree/canary/examples/cms-kontent',
+  image:
+    'https://og-image.now.sh/**Build%20and%20deploy%20a%20Next.js%20blog**%20%3Cbr%2F%3Ewith%20Kentico%20Kontent%20and%20Vercel.png?theme=light&md=1&fontSize=75px&images=https%3A%2F%2Fassets.vercel.com%2Fimage%2Fupload%2Ffront%2Fassets%2Fdesign%2Fvercel-triangle-black.svg&images=https%3A%2F%2Fraw.githubusercontent.com%2FKentico%2FHome%2Fmaster%2Fimages%2Fkk-logo-vercel.svg',
+  editUrl: 'pages/guides/deploying-next-and-kontent-with-vercel.mdx',
+  name: 'Next.js + Kontent',
+  type: 'site',
+  demo: 'https://next-blog-kontent.vercel.app/',
+  lastEdited: '2021-02-18T12:18:30.000Z',
+  rank: 1,
+}
+
+[Kentico Kontent](https://kontent.ai) delivers all the benefits of a headless CMS while empowering your marketing team to manage the experience across your digital channels.
+
+This guides showcases how to use Kontent with Next.js [Static Generation](https://nextjs.org/docs/basic-features/pages) to generate static pages from your Kontent data, delivering a lightning fast experience for your users.
+
+<Image
+  src="https://og-image.now.sh/**Build%20and%20deploy%20a%20Next.js%20blog**%20%3Cbr%2F%3Ewith%20Kentico%20Kontent%20and%20Vercel.png?theme=light&md=1&fontSize=75px&images=https%3A%2F%2Fassets.vercel.com%2Fimage%2Fupload%2Ffront%2Fassets%2Fdesign%2Fvercel-triangle-black.svg&images=https%3A%2F%2Fraw.githubusercontent.com%2FKentico%2FHome%2Fmaster%2Fimages%2Fkk-logo-vercel.svg"
+  width={2048 / 2.5}
+  height={1170 / 2.5}
+/>
+
+## Step 1: Creating a Kontent + Next.js Project
+
+You can [view a working demo](https://next-blog-kontent.vercel.app/), the app you will create is shown in the screenshot below:
+
+<Image
+  src={`${process.env.ASSETS}/guides/deploying-next-kontent-with-vercel/example-screenshot.png`}
+  width={1044}
+  height={940}
+/>
+
+<Caption>The Next.js + Kontent demo app.</Caption>
+
+### Regiter Kontent project
+
+To get started, [create an account on Kontent.ai](https://app.kontent.ai/sign-up). After signing up, [create an empty project](https://docs.kontent.ai/tutorials/set-up-kontent/projects/manage-projects#a-creating-projects).
+
+### Create the content models and fill them with data
+
+The [content model](https://docs.kontent.ai/tutorials/set-up-kontent/content-modeling/what-is-content-modeling) defines the data structures of your application/websites. The structures are flexible and you can tailor them to your needs.
+
+For this example you need to create a content model that defines an `author` and a `post` content type.
+
+> You can [create content model and fill it with data manually](https://github.com/vercel/next.js/blob/canary/examples/cms-kontent/README.md#step-21-optionally-create-the-content-models-manually) to familiarize yourself with the Kontent user interface.
+
+To import the content models with their data automatically, follow the next steps:
+
+1. Enter [Kontent application](https://app.kontent.ai)
+2. Go to "Project Settings", select API keys
+3. Activate Management API
+4. Copy `Project ID` and `Management API` key
+5. Install [Kontent Backup Manager](https://github.com/Kentico/kontent-backup-manager-js) and import data to newly created project from [kontent-backup.zip](https://github.com/vercel/next.js/raw/canary/examples/cms-kontent/kontent-backup.zip) file (place appropriate values for apiKey and projectId arguments):
+
+<Snippet
+  dark
+  text={[
+    'npm i -g @kentico/kontent-backup-manager',
+    'kbm --action=restore --apiKey=<Management API key> --projectId=<Project ID> --zipFilename=kontent-backup',
+  ]}
+/>
+<Caption>Import content models and data to Kontent project.</Caption>
+
+> **💡 Alternatively, you can use the [Template Manager UI](https://kentico.github.io/kontent-template-manager/import) for importing the content.**
+
+1. Go to your Kontent project and publish all the imported items.
+   > You could deactivate Management API key, it is not necessary any more.
+
+### Application initialization
+
+Initialize the application locally with following command:
+
+<Snippet
+  dark
+  text="npm init next-app --example cms-kontent nextjs-kontent-app && cd nextjs-kontent-app"
+/>
+<Caption>
+  Initializing a Next.js + Kontent app and entering into the project directory.
+</Caption>
+
+## Step 2: Set up Environment Variables
+
+Copy the `.env.local.example` file in this directory to `.env.local` (which will be ignored by Git):
+
+<Snippet dark text="cp .env.local.example .env.local" />
+
+Then set each variable on `.env.local` using the keys `Project settings` > `API keys`:
+
+- `KONTENT_PROJECT_ID` - Should be the Project ID in `Project settings` > `API keys`.
+- `KONTENT_PREVIEW_API_KEY` - One of the Preview API keys in `Project settings` > `API keys`.
+- `KONTENT_PREVIEW_SECRET` - Can be any random string (but avoid spaces), like `MY_SECRET` - this is used for [Preview Mode](https://nextjs.org/docs/advanced-features/preview-mode).
+
+After installing the required dependencies, you are now able to run and develop your Next.js + Kontent app locally.
+
+<Snippet dark text={['npm install', 'npm run dev']} />
+<Caption>
+  Running the app locally with the <InlineCode>dev</InlineCode> command using{' '}
+  <InlineCode>npm</InlineCode>.
+</Caption>
+
+<Snippet dark text={['yarn', 'yarn dev']} />
+<Caption>
+  Running the app locally with the <InlineCode>dev</InlineCode> command using{' '}
+  <InlineCode>yarn</InlineCode>.
+</Caption>
+
+## Step 3: Understanding the Code
+
+To understand how the app works, there are three main areas to explore:
+
+- [Page Setup](#page-setup)
+- [Retrieving Content](#retrieving-content)
+- [Image Optimization](#image-optimization)
+
+### Page Setup
+
+Each page displays a single blog post with the dynamic Object `slug` and two latest blog posts teasers from Kontent:
+
+```jsx
+import { useRouter } from 'next/router'
+import ErrorPage from 'next/error'
+import Container from '../../components/container'
+import PostBody from '../../components/post-body'
+import MoreStories from '../../components/more-stories'
+import Header from '../../components/header'
+import PostHeader from '../../components/post-header'
+import SectionSeparator from '../../components/section-separator'
+import Layout from '../../components/layout'
+import {
+  getAllPostSlugs,
+  getPostBySlug,
+  getMorePostsForSlug,
+} from '../../lib/api'
+import PostTitle from '../../components/post-title'
+import Head from 'next/head'
+import { CMS_NAME } from '../../lib/constants'
+
+export default function Post({ post, morePosts = [], preview }) {
+  const router = useRouter()
+  if (!router.isFallback && !post?.slug) {
+    return <ErrorPage statusCode={404} />
+  }
+  return (
+    <Layout preview={preview}>
+      <Container>
+        <Header />
+        {router.isFallback ? (
+          <PostTitle>Loading…</PostTitle>
+        ) : (
+          <>
+            <article className="mb-32">
+              <Head>
+                <title>
+                  {post.title} | Next.js Blog Example with {CMS_NAME}
+                </title>
+                <meta property="og:image" content={post.coverImage.url} />
+              </Head>
+              <PostHeader
+                title={post.title}
+                coverImage={post.coverImage}
+                date={post.date}
+                author={post.author}
+              />
+              <PostBody content={post.content} />
+            </article>
+            <SectionSeparator />
+            {morePosts.length > 0 && <MoreStories posts={morePosts} />}
+          </>
+        )}
+      </Container>
+    </Layout>
+  )
+}
+
+export async function getStaticProps({ params, preview = null }) {
+  return await Promise.all([
+    getPostBySlug(params.slug, preview),
+    getMorePostsForSlug(params.slug, preview),
+  ]).then((values) => ({
+    props: {
+      post: values[0],
+      morePosts: values[1],
+      preview,
+    },
+  }))
+}
+
+export async function getStaticPaths() {
+  const slugs = await getAllPostSlugs(['slug'])
+  return {
+    paths: slugs.map(
+      (slug) =>
+        ({
+          params: {
+            slug,
+          },
+        } || [])
+    ),
+    fallback: false,
+  }
+}
+```
+
+<Caption>
+  The <InlineCode>pages/posts/[slug].js</InlineCode> file for your Next.js +
+  Kontent app.
+</Caption>
+
+### Retrieving Content
+
+Kontent data is retrieved in the `lib/api.js` file making requests to the Kontent Delivery API using the [Kontent Delivery SDK](https://www.npmjs.com/package/@kentico/kontent-delivery).
+
+```javascript
+import { DeliveryClient } from '@kentico/kontent-delivery'
+import { name, version } from '../package.json'
+
+const sourceTrackingHeaderName = 'X-KC-SOURCE'
+
+const client = new DeliveryClient({
+  projectId: process.env.KONTENT_PROJECT_ID,
+  previewApiKey: process.env.KONTENT_PREVIEW_API_KEY,
+  globalHeaders: (_queryConfig) => [
+    {
+      header: sourceTrackingHeaderName,
+      value: `@vercel/next.js/example/${name};${version}`,
+    },
+  ],
+})
+
+function parseAuthor(author) {
+  return {
+    name: author.name.value,
+    picture: author.picture.value[0].url,
+  }
+}
+
+function parsePost(post) {
+  return {
+    title: post.title.value,
+    slug: post.slug.value,
+    date: post.date.value.toISOString(),
+    content: post.content.value,
+    excerpt: post.excerpt.value,
+    coverImage: post.cover_image.value[0].url,
+    author: parseAuthor(post.author.value[0]),
+  }
+}
+
+export async function getAllPostSlugs() {
+  const postsResponse = await client
+    .items()
+    .type('post')
+    .elementsParameter(['slug'])
+    .toPromise()
+
+  return postsResponse.items.map((post) => post.slug.value)
+}
+
+export async function getMorePostsForSlug(slug, preview) {
+  return client
+    .items()
+    .queryConfig({
+      usePreviewMode: !!preview,
+    })
+    .type('post')
+    .orderByDescending('elements.date')
+    .withParameter('elements.slug[neq]', slug)
+    .limitParameter(2)
+    .toPromise()
+    .then((res) => {
+      return res.items.map((post) => parsePost(post))
+    })
+}
+
+export async function getPostBySlug(slug, preview) {
+  const post = await client
+    .items()
+    .queryConfig({
+      usePreviewMode: !!preview,
+    })
+    .type('post')
+    .equalsFilter('elements.slug', slug)
+    .toPromise()
+    .then((result) => result.getFirstItem())
+    .then((post) => parsePost(post))
+  return post
+}
+
+export async function getAllPosts(preview) {
+  return await client
+    .items()
+    .queryConfig({
+      usePreviewMode: !!preview,
+    })
+    .type('post')
+    .orderByDescending('elements.date')
+    .toPromise()
+    .then((postsResponse) => postsResponse.items.map((post) => parsePost(post)))
+}
+```
+
+<Caption>
+  The <InlineCode>lib/api.js</InlineCode> file for your Next.js + Kontent app.
+</Caption>
+
+## Image Transformation posibilities
+
+If you want to optimize the speed of your site, it is possible to use [Kontent Image Transformation API](https://docs.kontent.ai/reference/image-transformation) to transform retrieved images and reduce the download time for images. This could be applied for blog post cover images or to author profile picture. The easiest way is to use to the [Image transformation support in Kontent Delivery SDK](https://github.com/Kentico/kontent-delivery-sdk-js/blob/master/DOCS.md#image-transformation).
+
+```jsx
+import cn from 'classnames'
+import Link from 'next/link'
+import {
+  ImageUrlBuilder,
+  ImageCompressionEnum,
+  ImageFormatEnum,
+} from '@kentico/kontent-delivery'
+
+export default function CoverImage({ title, src, slug }) {
+  const transformedSrc = new ImageUrlBuilder(src)
+    .withCompression(ImageCompressionEnum.Lossless)
+    .withAutomaticFormat(ImageFormatEnum.Webp)
+    .withQuality(80)
+    .getUrl()
+
+  const image = (
+    <img
+      src={transformedSrc}
+      alt={`Cover Image for ${title}`}
+      className={cn('shadow-small', {
+        'hover:shadow-medium transition-shadow duration-200': slug,
+      })}
+    />
+  )
+  return (
+    <div className="-mx-5 sm:mx-0">
+      {slug ? (
+        <Link as={`/posts/${slug}`} href="/posts/[slug]">
+          <a aria-label={title}>{image}</a>
+        </Link>
+      ) : (
+        image
+      )}
+    </div>
+  )
+}
+```
+
+<Caption>
+  Possible modification of <InlineCode>components/cover-image.js</InlineCode>{' '}
+  component using Image Transformation API to get images in{' '}
+  <Link href="https://developers.google.com/speed/webp">
+    moderm WebP format
+  </Link>
+  .
+</Caption>
+
+## Step 4: Using Preview Mode
+
+To add the ability to preview content from your Kontent project usind [Preview Delivery API](https://docs.kontent.ai/reference/delivery-api#section/Introduction), open your Kontent project, go to **Project Settings > Preview URLs** and set a new preview URL for the `Post` content type to:
+
+```
+http://localhost:3000/api/preview?secret=<KONTENT_PREVIEW_SECRET>&slug={URLslug}
+```
+
+> Replace `<KONTENT_PREVIEW_SECRET>` with its respective value in `.env.local`:
+
+<Image
+  src={`${process.env.ASSETS}/guides/deploying-next-kontent-with-vercel/preview-URLs-setup.png`}
+  width={1017}
+  height={300}
+/>
+<Caption>The Preview URL setup for Post content type.</Caption>
+
+Once saved, go to one of the posts you've created and:
+
+- Create a new version of the post
+- **Update the title**. For example, you can add `[Draft]` in front of the title.
+  > Mind the title also regenerates the URL slug, if you want to change any other field that does not influence URL slug, feel free to do so.
+- **Do not** publish it. By doing this, the post will be in draft workflow step.
+- On the menu, you will see the **Preview** button. Click on it!
+
+<Image
+  src={`${process.env.ASSETS}/guides/deploying-next-kontent-with-vercel/post-preview-button.png`}
+  width={1431}
+  height={732}
+/>
+<Caption>The new Preview button in post detail.</Caption>
+
+You will now be able to see the updated title. To exit preview mode, you can click on **Click here to exit preview mode** at the top of the page.
+
+## Step 5: Deploying Your App with Vercel
+
+<DeploySection meta={meta} />
+
+export default ({ children }) => <Guide meta={meta}>{children}</Guide>
+
+export const config = {
+  amp: 'hybrid',
+}
